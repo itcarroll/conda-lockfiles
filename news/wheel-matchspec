@@ -1,0 +1,3 @@
+### Bug fixes
+
+* Fix installing from a lockfile that references a wheel (`.whl`) URL in a local channel. (#1)

@@ -19,6 +19,16 @@ if TYPE_CHECKING:
     CondaPackageMetadata = dict[str, Any]
 
 
+def _match_spec(url: CondaPackageURL, metadata: CondaPackageMetadata) -> MatchSpec:
+    hashes = {key: metadata[key] for key in ("md5", "sha256") if key in metadata}
+    if url.endswith(".whl") and "name" in metadata and "version" in metadata:
+        # MatchSpec would mis-parse wheel filenames (e.g. py3-none-any)
+        return MatchSpec(
+            url=url, name=metadata["name"], version=metadata["version"], **hashes
+        )
+    return MatchSpec(url, **hashes)
+
+
 def records_from_conda_urls(
     metadata_by_url: dict[CondaPackageURL, CondaPackageMetadata],
     dry_run: bool = False,
@@ -32,12 +42,7 @@ def records_from_conda_urls(
     the package cache.
 
     """
-    fetch_specs = [
-        MatchSpec(
-            url, **{key: metadata[key] for key in ("md5", "sha256") if key in metadata}
-        )
-        for url, metadata in metadata_by_url.items()
-    ]
+    fetch_specs = [_match_spec(url, metadata) for url, metadata in metadata_by_url.items()]
 
     if dry_run:
         print("\nDry run would have fetched the following package records:")

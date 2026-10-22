@@ -82,3 +82,13 @@ def test_records_from_conda_urls_dry_run(monkeypatch, capsys):
     # breakpoint()
 
     assert out == expected_dry_run_output
+
+
+def test_match_spec_for_wheel_url() -> None:
+    from conda_lockfiles.records_from_conda_urls import _match_spec
+
+    url = "file:///tmp/wheels/noarch/cowsay-6.1-py3-none-any.whl"
+    spec = _match_spec(url, {"name": "cowsay", "version": "6.1", "sha256": "ab"})
+    assert spec.get("name") == "cowsay"
+    assert spec.get("version") == "6.1"
+    assert spec.get("url") == url
